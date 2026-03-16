@@ -236,14 +236,15 @@ codex-agent/
 或者，把下面这段话直接发给你的 OpenClaw，它会自动帮你完成配置：
 
 > 请帮我安装和配置 codex-agent skill。
-> 先读一遍完整的安装指南 `~/.openclaw/workspace-coding/skills/cli-agents/codex-agent/INSTALL.md`，然后按照步骤帮我完成配置。
-> 如果还没有这个文件，先从 https://github.com/dztabel-happy/codex-agent 克隆到 `~/.openclaw/workspace-coding/skills/cli-agents/codex-agent/`，再读 INSTALL.md 执行。
+> 先读一遍完整的安装指南 `~/.openclaw/workspace/skills/codex-agent/INSTALL.md`，然后按照步骤帮我完成配置。
+> 如果还没有这个文件，先从 https://github.com/dztabel-happy/codex-agent 克隆到 `~/.openclaw/workspace/skills/codex-agent/`，再读 INSTALL.md 执行。
 
 配置完成后，在 Telegram 里对 OpenClaw 说一句话就能用：
 
 如果要把单个 Codex session 固定到某个 Discord thread，建议直接用：
 
 ```bash
+cd ~/.openclaw/workspace/skills/codex-agent
 CODEX_AGENT_SOURCE_CHAT_ID="channel:<thread_id>" \
 CODEX_AGENT_SOURCE_CHANNEL="discord" \
 CODEX_AGENT_SOURCE_ACCOUNT="coder" \
@@ -260,7 +261,7 @@ bash hooks/start_codex.sh codex-<name> /path/to/project
 已安装的用户更新到最新版本：
 
 ```bash
-cd ~/.openclaw/workspace-coding/skills/cli-agents/codex-agent
+cd ~/.openclaw/workspace/skills/codex-agent
 git pull
 ```
 

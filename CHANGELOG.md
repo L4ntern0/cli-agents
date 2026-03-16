@@ -45,7 +45,7 @@ Source: <https://github.com/dztabel-happy/codex-agent>
 - `stop_codex.sh`
   - now sends session-close notifications using route context
   - now removes per-session route files on cleanup
-- Documentation updated for `workspace-coding/skills/cli-agents/...` layout and managed thread routing workflow
+- Documentation updated for `skills/...` installation paths and managed thread routing workflow
 
 ### Changed vs upstream `N1nEmAn/claude-agent`
 Source: <https://github.com/N1nEmAn/claude-agent>

@@ -205,8 +205,8 @@ claude-agent/
 或者，把下面这段话直接发给你的 OpenClaw，它会自动帮你完成配置：
 
 > 请帮我安装和配置 claude-agent skill。
-> 先读一遍完整的安装指南 `~/.openclaw/workspace-coding/skills/cli-agents/claude-agent/INSTALL.md`，然后按照步骤帮我完成配置。
-> 如果还没有这个文件，先从 GitHub 克隆到 `~/.openclaw/workspace-coding/skills/cli-agents/claude-agent/`，再读 INSTALL.md 执行。
+> 先读一遍完整的安装指南 `~/.openclaw/workspace/skills/claude-agent/INSTALL.md`，然后按照步骤帮我完成配置。
+> 如果还没有这个文件，先从 GitHub 克隆到 `~/.openclaw/workspace/skills/claude-agent/`，再读 INSTALL.md 执行。
 
 配置完成后，在 Telegram 里对 OpenClaw 说一句话就能用：
 
@@ -217,7 +217,7 @@ claude-agent/
 已安装的用户更新到最新版本：
 
 ```bash
-cd ~/.openclaw/workspace-coding/skills/cli-agents/claude-agent
+cd ~/.openclaw/workspace/skills/claude-agent
 git pull
 ```
 

@@ -189,8 +189,8 @@ See **[INSTALL.md](INSTALL.md)** for detailed setup (7 steps, ~5 minutes).
 Or, send this message to your OpenClaw and it will auto-configure everything:
 
 > Please install and configure the codex-agent skill.
-> First read the full installation guide at `~/.openclaw/workspace-coding/skills/cli-agents/codex-agent/INSTALL.md`, then follow the steps to complete the setup.
-> If the file doesn't exist yet, first clone from https://github.com/dztabel-happy/codex-agent to `~/.openclaw/workspace-coding/skills/cli-agents/codex-agent/`, then read INSTALL.md and execute.
+> First read the full installation guide at `~/.openclaw/workspace/skills/codex-agent/INSTALL.md`, then follow the steps to complete the setup.
+> If the file doesn't exist yet, first clone from https://github.com/dztabel-happy/codex-agent to `~/.openclaw/workspace/skills/codex-agent/`, then read INSTALL.md and execute.
 
 After setup, just say something to OpenClaw in Telegram:
 
@@ -201,7 +201,7 @@ After setup, just say something to OpenClaw in Telegram:
 Already installed? Update to the latest version:
 
 ```bash
-cd ~/.openclaw/workspace-coding/skills/cli-agents/codex-agent
+cd ~/.openclaw/workspace/skills/codex-agent
 git pull
 ```
 

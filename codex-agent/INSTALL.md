@@ -19,12 +19,12 @@ cd ~/.openclaw/workspace/skills/
 git clone https://github.com/dztabel-happy/codex-agent.git
 
 # 方式 2：手动复制（如果你已经下载了）
-cp -r /path/to/codex-agent ~/.openclaw/workspace-coding/skills/cli-agents/codex-agent
+cp -r /path/to/codex-agent ~/.openclaw/workspace/skills/codex-agent
 ```
 
 验证 skill 被识别：
 ```bash
-ls ~/.openclaw/workspace-coding/skills/cli-agents/codex-agent/SKILL.md
+ls ~/.openclaw/workspace/skills/codex-agent/SKILL.md
 # 应该存在
 ```
 
@@ -38,7 +38,7 @@ notify = ["python3", "<SKILL_PATH>/hooks/on_complete.py"]
 
 其中 `<SKILL_PATH>` 替换为实际路径，例如：
 ```toml
-notify = ["python3", "/Users/你的用户名/.openclaw/workspace-coding/skills/cli-agents/codex-agent/hooks/on_complete.py"]
+notify = ["python3", "/Users/你的用户名/.openclaw/workspace/skills/codex-agent/hooks/on_complete.py"]
 ```
 
 ## 第三步：配置通知目标
@@ -131,7 +131,7 @@ openclaw gateway restart
 ## 第五步：设置脚本权限
 
 ```bash
-cd ~/.openclaw/workspace-coding/skills/cli-agents/codex-agent/hooks/
+cd ~/.openclaw/workspace/skills/codex-agent/hooks/
 chmod +x on_complete.py pane_monitor.sh start_codex.sh stop_codex.sh
 ```
 
@@ -181,7 +181,7 @@ OpenClaw 会：
 
 ```
 请帮我安装和配置 codex-agent skill。步骤：
-1. 将 codex-agent skill 安装到 ~/.openclaw/workspace-coding/skills/cli-agents/codex-agent/
+1. 将 codex-agent skill 安装到 ~/.openclaw/workspace/skills/codex-agent/
 2. 在 ~/.codex/config.toml 中添加 notify hook，路径指向 hooks/on_complete.py
 3. 设置环境变量 CODEX_AGENT_CHAT_ID 为我的 Telegram Chat ID
 4. 配置 OpenClaw session 不自动重置（idle + 52560000 分钟）

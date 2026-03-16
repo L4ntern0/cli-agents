@@ -150,7 +150,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 ~/.openclaw/workspace-coding/skills/cli-agents/claude-agent/hooks/on_complete.py"
+            "command": "python3 ~/.openclaw/workspace/skills/claude-agent/hooks/on_complete.py"
           }
         ]
       }
