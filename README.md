@@ -33,3 +33,16 @@ Current canonical paths inside `workspace-coding`:
 - Route state remains under `/tmp/codex-agent-routes` and `/tmp/claude-agent-routes`
 - The bridge reply map is implemented by `bridge/reply_route_map.py`
 - Nested `.git` directories from the old split repos were removed when consolidating this repository
+
+## Upstream and acknowledgements
+
+This repository builds on the ideas and implementations from these upstream projects:
+
+- `dztabel-happy/codex-agent` — <https://github.com/dztabel-happy/codex-agent>
+- `N1nEmAn/claude-agent` — <https://github.com/N1nEmAn/claude-agent>
+
+Many thanks to the original authors for the baseline design and implementation work that made this consolidated repository possible.
+
+## See also
+
+- `CHANGELOG.md` — repository-level summary of what changed relative to the upstream projects
