@@ -20,7 +20,7 @@
 
 ## 致谢
 
-感谢 [`dztabel-happy/codex-agent`](https://github.com/dztabel-happy/codex-agent) 原作者提供的基础设计与实现，本仓库在其思路基础上进行了适配与扩展。
+感谢 [`dztabel-happy/codex-agent`](https://github.com/dztabel-happy/codex-agent) 原作者提供的基础设计与实现。本仓库在其思路基础上进行了 OpenClaw thread 路由、reply-target 映射、bridge 工具与统一仓库布局等适配与扩展。
 
 ## 本仓库新增功能与变更原因
 

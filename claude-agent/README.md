@@ -278,13 +278,21 @@ bash hooks/start_claude.sh claude-benchmark /path/to/benchmark \
 - [ ] pane monitor 支持更多审批模式检测
 - [x] 支持 Claude Code 多 session 并行管理
 
+## 上游说明
+
+本仓库基于 [`N1nEmAn/claude-agent`](https://github.com/N1nEmAn/claude-agent) 进行二次开发，现作为**独立仓库**维护，**并非 GitHub Fork**。
+
+原始上游仓库：
+- https://github.com/N1nEmAn/claude-agent
+
+相关上游来源：
+- `claude-agent` 的整体架构也继承自 `dztabel-happy/codex-agent`：<https://github.com/dztabel-happy/codex-agent>
+
+维护说明：
+- 为避免 GitHub Fork 关系带来的仓库管理限制，本项目采用普通仓库方式维护；
+- 本仓库可能会根据实际需求持续演进，并逐步偏离上游实现；
+- 如需引入上游更新，请通过 Git 远程 `upstream` 手动同步。
+
 ## 致谢
 
-本项目基于 [codex-agent](https://github.com/dztabel-happy/codex-agent) 改造而来。codex-agent 由 [@dztabel-happy](https://github.com/dztabel-happy) 原创，实现了通过 OpenClaw 操作 OpenAI Codex CLI 的完整工作流（tmux + hook 双通道通知架构、知识库维护体系、项目经理式多步骤任务执行）。
-
-claude-agent 继承了 codex-agent 的核心架构设计，将目标 CLI 从 OpenAI Codex 迁移到 Anthropic Claude Code，适配了 Claude Code 的 hooks 系统、权限模型和 settings.json 配置格式。
-
-感谢原作者的出色工作。
-��移到 Anthropic Claude Code，适配了 Claude Code 的 hooks 系统、权限模型和 settings.json 配置格式。
-
-感谢原作者的出色工作。
+感谢 [`N1nEmAn/claude-agent`](https://github.com/N1nEmAn/claude-agent) 与 [`dztabel-happy/codex-agent`](https://github.com/dztabel-happy/codex-agent) 两个上游项目提供的基础设计与实现。本仓库在其思路基础上，补充了 thread 路由、reply-target 映射、bridge 工具和统一仓库布局。

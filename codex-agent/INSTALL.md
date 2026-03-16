@@ -38,7 +38,7 @@ notify = ["python3", "<SKILL_PATH>/hooks/on_complete.py"]
 
 其中 `<SKILL_PATH>` 替换为实际路径，例如：
 ```toml
-notify = ["python3", "/Users/你的用户名/.openclaw/workspace/skills/cli-agents/skills/cli-agents/codex-agent/hooks/on_complete.py"]
+notify = ["python3", "/Users/你的用户名/.openclaw/workspace-coding/skills/cli-agents/codex-agent/hooks/on_complete.py"]
 ```
 
 ## 第三步：配置通知目标
