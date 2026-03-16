@@ -139,11 +139,15 @@ def forward(kind: str, chat_id: str, channel: str, message: str, trace_id: str, 
 
 
 DISCORD_MENTION_RE = re.compile(r"<@!?\d+>|<@&\d+>")
+PLAIN_CODER_RE = re.compile(r"@Coder", re.IGNORECASE)
 
 
 def should_keep_for_openclaw(message: str) -> bool:
     text = str(message or "")
-    return bool(DISCORD_MENTION_RE.search(text))
+    # Keep for OpenClaw if:
+    # 1. Discord native mention (<@...>, <@!...>, <@&...>)
+    # 2. Plain text @Coder (case insensitive)
+    return bool(DISCORD_MENTION_RE.search(text)) or bool(PLAIN_CODER_RE.search(text))
 
 
 def main() -> int:
