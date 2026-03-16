@@ -79,6 +79,7 @@ payload = {
     "account": account,
     "agent_name": agent_name,
     "trace_id": trace_id,
+    "managed": "true",
     "updated_at": datetime.now(timezone.utc).isoformat(),
 }
 with open(route_file, "w") as f:
