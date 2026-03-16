@@ -29,8 +29,8 @@ start_monitors() {
             LOG_FILE="/tmp/claude_monitor_${session}.log"
         fi
         
-        # Check if already running
-        if ps aux | grep -v grep | grep -q "pane_monitor.sh $session"; then
+        # Check if already running (use [p] to avoid matching grep itself)
+        if ps aux | grep -q "[p]ane_monitor.sh $session"; then
             log "Monitor already running for $session"
             continue
         fi
@@ -48,9 +48,9 @@ daemon_loop() {
     while true; do
         sleep "$CHECK_INTERVAL"
         
-        # Check each active session has a monitor
+        # Check each active session has a monitor (use [p] to avoid matching grep itself)
         for session in $(get_active_sessions); do
-            if ! ps aux | grep -v grep | grep -q "pane_monitor.sh $session"; then
+            if ! ps aux | grep -q "[p]ane_monitor.sh $session"; then
                 log "Monitor missing for $session, restarting..."
                 
                 if [[ "$session" == *"codex"* ]] || [[ "$session" == *"ctf"* ]] || [[ "$session" == *"astra"* ]] || [[ "$session" == *"moss-codex"* ]]; then
