@@ -127,13 +127,9 @@ request_rule(⚠️ removed，应清理)
 ## 已信任的项目目录
 
 ```
-/Users/abel
-/Users/abel/project/claude-code-hub
-/Users/abel/project/cold-sim-opt
-/Users/abel/project/work_notebook_ob
-/Users/abel/project/test2
-/Users/abel/project
-/Users/abel/.cache/opencode/node_modules/oh-my-opencode-slim/dist
+~/projects/my-codex-project
+~/code/my-agent-project
+~/.codex/plugins
 ```
 
 ## 提示词增强策略

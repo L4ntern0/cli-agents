@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-OMC_HOOK="/home/lantern/.local/n/lib/node_modules/oh-my-codex/scripts/notify-hook.js"
+# Try to find oh-my-codex notify-hook.js automatically
+OMC_HOOK=""
+if OMC_PATH="$(command -v oh-my-codex 2>/dev/null)" && [ -f "$OMC_PATH" ]; then
+  OMC_HOOK="$(dirname "$OMC_PATH")/../scripts/notify-hook.js"
+  [ -f "$OMC_HOOK" ] || OMC_HOOK=""
+fi
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CODEX_AGENT_HOOK="$SCRIPT_DIR/on_complete.py"
 
