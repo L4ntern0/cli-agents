@@ -177,9 +177,11 @@ def main() -> int:
     summary = extract_summary(notification)
     route = resolve_route(cwd=cwd)
 
-    # Gate: only respond to coding agent, skip main/other agents to avoid balance issues
-    if route.get("agent_name") != "coding":
-        log(f"Ignoring non-coding agent trigger: agent_name={route.get('agent_name')}, cwd={cwd}")
+    # Gate: only respond to configured coding agent, skip other agents to avoid balance issues
+    # Configure via env var: CODING_AGENT_NAME (default: "coding")
+    allowed_agent = os.environ.get("CODING_AGENT_NAME", "coding")
+    if route.get("agent_name") != allowed_agent:
+        log(f"Ignoring non-coding agent trigger: agent_name={route.get('agent_name')}, expected={allowed_agent}, cwd={cwd}")
         return 0
 
     chat_id = str(route["chat_id"])

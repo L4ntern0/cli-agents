@@ -7,6 +7,7 @@ Codex notify hook — 只接管由 codex-agent 管理的 Codex 会话。
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from datetime import datetime
@@ -159,9 +160,11 @@ def main() -> int:
         log(f"Ignoring unmanaged Codex turn: missing session marker, cwd={cwd}, thread={thread_id}")
         return 0
 
-    # Gate: only respond to coding agent, skip main/other agents to avoid balance issues
-    if route.get("agent_name") != "coding":
-        log(f"Ignoring non-coding agent trigger: agent_name={route.get('agent_name')}, session={session_name}")
+    # Gate: only respond to configured coding agent, skip other agents to avoid balance issues
+    # Configure via env var: CODING_AGENT_NAME (default: "coding")
+    allowed_agent = os.environ.get("CODING_AGENT_NAME", "coding")
+    if route.get("agent_name") != allowed_agent:
+        log(f"Ignoring non-coding agent trigger: agent_name={route.get('agent_name')}, expected={allowed_agent}, session={session_name}")
         return 0
 
     chat_id = str(route["chat_id"])
