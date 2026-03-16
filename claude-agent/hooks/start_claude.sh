@@ -143,7 +143,6 @@ payload = {
 }
 with open(route_file, "w") as f:
     json.dump(payload, f, ensure_ascii=False, indent=2)
-print(f"[route-trace] trace_id={trace_id} route_file={route_file} session={session_name} route={channel}:{chat_id}")
 PY
 fi
 
