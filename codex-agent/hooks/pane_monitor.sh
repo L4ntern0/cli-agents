@@ -176,24 +176,42 @@ command: ${CMD:-unknown}
             wake_agent "$AGENT_MSG"
             log "Approval detected: $CMD"
         fi
-    # 空闲状态检测 (Codex 出现主提示符)
-    elif echo "$OUTPUT" | grep -q "? for shortcuts"; then
+    # 空闲状态检测 - 当出现 › 提示符时（最可靠）
+    elif echo "$OUTPUT" | grep -q "›"; then
         if [ "$LAST_STATE" = "working" ]; then
             LAST_STATE="idle"
             NOTIFIED_APPROVAL=""
             NOTIFIED_WORK_START=""
             save_state
-            log "Back to idle"
+            log "Back to idle (› prompt detected)"
         fi
-    # 工作状态检测 - 当出现 Thinking/Creating/Editing/Running 等关键词时
+    # 工作状态检测 - 使用更可靠的模式
+    # 优先检测 "Working (" 模式（最可靠）
+    elif echo "$OUTPUT" | grep -q "Working ("; then
+        if [ "$LAST_STATE" != "working" ]; then
+            LAST_STATE="working"
+            log "Transitioned to working (Working pattern detected)"
+            if [ -z "$NOTIFIED_WORK_START" ]; then
+                NOTIFIED_WORK_START="sent"
+                save_state
+                if [ -n "$CHAT_ID" ] && [ -n "$CHANNEL" ]; then
+                    MSG="$(build_work_start_message)"
+                    if notify_thread "$MSG" "work-start"; then
+                        log "Work-start notification sent"
+                    else
+                        log "⚠️ Work-start notification failed"
+                    fi
+                fi
+            fi
+        fi
+    # 备用：关键词匹配（作为后备检测）
     elif echo "$OUTPUT" | grep -qE "Thinking|Creating|Editing|Running|Reading|Searching|Writing|Determining"; then
         if [ "$LAST_STATE" != "working" ]; then
             LAST_STATE="working"
-            log "Transitioned to working"
-            # 发送工作开始通知 (仅发送一次，回到 idle 后才可再次发送)
+            log "Transitioned to working (keyword fallback detected)"
             if [ -z "$NOTIFIED_WORK_START" ]; then
                 NOTIFIED_WORK_START="sent"
-            save_state
+                save_state
                 if [ -n "$CHAT_ID" ] && [ -n "$CHANNEL" ]; then
                     MSG="$(build_work_start_message)"
                     if notify_thread "$MSG" "work-start"; then
