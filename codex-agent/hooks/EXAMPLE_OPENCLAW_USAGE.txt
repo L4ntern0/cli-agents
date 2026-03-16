@@ -1,0 +1,19 @@
+OpenClaw 内推荐启动方式：
+
+bash skills/cli-agents/codex-agent/hooks/start_codex_openclaw.sh \
+  codex-demo \
+  /path/to/project \
+  --full-auto \
+  --source-chat-id channel:1476499534510297263 \
+  --source-channel discord \
+  --source-agent-name main
+
+说明：
+- 默认就是免审批启动；如需人工审批，把 `--full-auto` 改成 `--approval`
+- --source-chat-id: 当前消息来源 chat_id
+- --source-channel: 当前消息来源 channel（discord / telegram / whatsapp ...）
+- --source-agent-name: 通常保持 main
+
+效果：
+- 启动时把来源会话写入 /tmp/codex-agent-routes/<session>.json
+- 完成通知与审批提醒优先回发到该来源会话
