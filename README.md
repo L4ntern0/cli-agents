@@ -34,6 +34,17 @@ Current canonical paths inside `workspace-coding`:
 - The bridge reply map is implemented by `bridge/reply_route_map.py`
 - Nested `.git` directories from the old split repos were removed when consolidating this repository
 
+### Environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CODING_AGENT_NAME` | `coding` | Only trigger hooks when `agent_name` matches this value. Prevents main/other agents from accidentally triggering Codex/Claude Code hooks and draining balance. |
+
+```bash
+# Example: customize agent name
+export CODING_AGENT_NAME=coder
+```
+
 ## Upstream and acknowledgements
 
 This repository builds on the ideas and implementations from these upstream projects:
