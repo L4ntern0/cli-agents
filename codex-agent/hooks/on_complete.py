@@ -154,8 +154,14 @@ def main() -> int:
         if route.get("managed") == "true" and route.get("route_file"):
             log(f"Recovered managed Codex session by cwd fallback: session={session_name}, cwd={cwd}, thread={thread_id}")
 
+    # Only allow coding agent to trigger notifications; skip main/other agents
     if not session_name or route.get("managed") != "true" or not route.get("route_file"):
         log(f"Ignoring unmanaged Codex turn: missing session marker, cwd={cwd}, thread={thread_id}")
+        return 0
+
+    # Gate: only respond to coding agent, skip main/other agents to avoid balance issues
+    if route.get("agent_name") != "coding":
+        log(f"Ignoring non-coding agent trigger: agent_name={route.get('agent_name')}, session={session_name}")
         return 0
 
     chat_id = str(route["chat_id"])

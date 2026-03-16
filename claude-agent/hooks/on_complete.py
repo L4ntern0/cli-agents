@@ -176,6 +176,12 @@ def main() -> int:
     cwd = str(notification.get("cwd", os.getcwd()))
     summary = extract_summary(notification)
     route = resolve_route(cwd=cwd)
+
+    # Gate: only respond to coding agent, skip main/other agents to avoid balance issues
+    if route.get("agent_name") != "coding":
+        log(f"Ignoring non-coding agent trigger: agent_name={route.get('agent_name')}, cwd={cwd}")
+        return 0
+
     chat_id = str(route["chat_id"])
     channel = str(route["channel"])
     account = str(route["account"])
