@@ -220,7 +220,14 @@ def main() -> int:
         competing_bindings=len(candidates),
         shadowed_bindings=loser_summary,
     )
-    return forward(candidate["kind"], args.chat_id, args.channel, args.message, trace_id)
+    return forward(
+        candidate["kind"],
+        args.chat_id,
+        args.channel,
+        args.message,
+        trace_id,
+        session_name=candidate.get("session_name", ""),
+    )
 
 
 if __name__ == "__main__":

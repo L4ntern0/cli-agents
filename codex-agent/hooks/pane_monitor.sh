@@ -14,6 +14,10 @@ LOG_FILE="/tmp/codex_monitor_${SESSION}.log"
 STATE_FILE="/tmp/codex_monitor_${SESSION}.state"
 
 # 持久化的通知状态 (跨重启)
+LAST_STATE="${LAST_STATE:-}"
+NOTIFIED_APPROVAL="${NOTIFIED_APPROVAL:-}"
+NOTIFIED_WORK_START="${NOTIFIED_WORK_START:-}"
+
 load_state() {
     if [ -f "$STATE_FILE" ]; then
         LAST_STATE="$(grep '^LAST_STATE=' "$STATE_FILE" 2>/dev/null | cut -d= -f2-)"
