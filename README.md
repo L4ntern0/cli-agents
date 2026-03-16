@@ -2,6 +2,10 @@
 
 A unified repository for terminal-driven CLI agent skills used with OpenClaw and agent-deck.
 
+## Quick Start
+
+See [INSTALL.md](./INSTALL.md) for detailed installation and setup instructions.
+
 ## Layout
 
 - `codex-agent/` — Codex tmux-based agent skill
