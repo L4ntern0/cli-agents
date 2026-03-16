@@ -57,6 +57,31 @@ The auto-forward is currently implemented via **AGENTS.md rules** that the OpenC
 
 When replying to a specific agent notification (task-reply, work-start, approval), use `--reply-to-message-id` or set environment variable `OPENCLAW_REPLY_TO_MESSAGE_ID` to enable precise routing.
 
+## Notification System
+
+### Claude Code Notifications (Event-Driven)
+
+Claude Code uses native hooks for precise notifications:
+
+| Event | Hook | Trigger | Reliability |
+|-------|------|---------|-------------|
+| Task Start | `UserPromptSubmit` hook → `task_start.py` | User submits prompt | ✅ Event-driven |
+| Task Complete | `Stop` hook → `on_complete.py` | Claude finishes responding | ✅ Event-driven |
+
+### Codex Notifications (Polling)
+
+Codex doesn't have native hooks, so we use pane monitoring:
+
+| Event | Method | Trigger | Reliability |
+|-------|--------|---------|-------------|
+| Work Start | `pane_monitor.sh` | Detect `Working (` pattern in pane | ⚠️ Polling |
+| Task Complete | `on_complete.py` | Codex `agent-turn-complete` event | ✅ Event-driven |
+
+### Comparison
+
+- **Claude Code**: Both start and complete notifications are event-driven (precise)
+- **Codex**: Only task complete is event-driven; work start uses polling
+
 ### Environment variables
 
 | Variable | Default | Description |

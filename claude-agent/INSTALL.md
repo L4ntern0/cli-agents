@@ -56,6 +56,17 @@ openclaw skills 2>&1 | grep claude-agent
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 <SKILL_PATH>/hooks/task_start.py",
+            "async": true
+          }
+        ]
+      }
     ]
   }
 }
@@ -68,6 +79,11 @@ openclaw skills 2>&1 | grep claude-agent
 - `CLAUDE_AGENT_NAME`：OpenClaw agent 名称，通常是 `main`
 
 > **注意**：`env` 中的变量会被 Claude Code 注入到 hook 进程环境中，这是 hook 能正确发送通知的关键。也兼容 `CODEX_AGENT_*` 前缀（从 codex-agent 迁移时无需改名）。
+
+### 通知类型说明
+
+- **UserPromptSubmit hook** (`task_start.py`)：当用户提交新任务时触发，发送"🚀 开始处理任务"通知（事件驱动，精确可靠）
+- **Stop hook** (`on_complete.py`)：当任务完成时触发，发送"🔔 任务回复"通知（事件驱动，精确可靠）
 
 ## 第三步：配置 pane_monitor 环境变量（可选）
 
