@@ -115,7 +115,7 @@ fi
 
 mkdir -p "$ROUTE_DIR"
 if [ -n "$SESSION_CHAT_ID" ]; then
-    if ! python3 "$SKILL_DIR/../../../scripts/check_route_conflicts.py" \
+    if ! python3 "$SKILL_DIR/../../bridge/check_route_conflicts.py" \
         --session "$SESSION" \
         --chat-id "$SESSION_CHAT_ID" \
         --channel "$SESSION_CHANNEL"; then

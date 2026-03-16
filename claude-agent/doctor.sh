@@ -17,7 +17,7 @@ status_line route_dir "$ROUTE_DIR"
 echo
 
 echo "[1/5] hook preflight"
-python3 "$ROOT/../../scripts/check_agent_hooks.py" claude || true
+python3 "$ROOT/../bridge/check_agent_hooks.py" claude || true
 echo
 
 echo "[2/5] route files"

@@ -53,7 +53,7 @@ SOURCE_AGENT_NAME="${CODEX_AGENT_SOURCE_AGENT_NAME:-${OPENCLAW_AGENT_NAME:-${COD
 SOURCE_ACCOUNT="${CODEX_AGENT_SOURCE_ACCOUNT:-${OPENCLAW_ACCOUNT_ID:-${CODEX_AGENT_ACCOUNT:-}}}"
 
 if [ -n "$SOURCE_CHAT_ID" ]; then
-    if ! python3 "$SKILL_DIR/../../../scripts/check_route_conflicts.py" \
+    if ! python3 "$SKILL_DIR/../../bridge/check_route_conflicts.py" \
         --kind codex \
         --session "$SESSION" \
         --chat-id "$SOURCE_CHAT_ID" \
