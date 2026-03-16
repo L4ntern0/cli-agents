@@ -275,6 +275,17 @@ git pull
 - Telegram 已配置为 OpenClaw 消息通道
 - ⚠️ **OpenClaw session 自动重置必须关闭或调大**（默认每天重置会丢失 Codex 任务上下文，详见 [INSTALL.md](INSTALL.md#第四步配置-openclaw-session-重置)）
 
+### 环境变量配置
+
+| 环境变量 | 默认值 | 说明 |
+|----------|--------|------|
+| `CODING_AGENT_NAME` | `coding` | 只有 agent_name 等于此值时才触发 hook（避免 main 等其他 agent 误触发导致余额耗尽） |
+
+```bash
+# 示例：自定义 agent 名称
+export CODING_AGENT_NAME=coder
+```
+
 ## 踩过的坑
 
 | 问题 | 解决 |
