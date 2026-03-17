@@ -1,0 +1,99 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1600" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08111F"/>
+      <stop offset="0.5" stop-color="#0B1830"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="250" y1="180" x2="1220" y2="720" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#61D4FF"/>
+      <stop offset="0.5" stop-color="#7C89FF"/>
+      <stop offset="1" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="accent2" x1="430" y1="210" x2="1230" y2="750" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#34D399"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+    <filter id="blurGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="28" result="blur"/>
+    </filter>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="20" stdDeviation="28" flood-color="#020617" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <circle cx="1320" cy="160" r="220" fill="#2563EB" opacity="0.18" filter="url(#blurGlow)"/>
+  <circle cx="290" cy="760" r="240" fill="#7C3AED" opacity="0.16" filter="url(#blurGlow)"/>
+  <circle cx="820" cy="120" r="160" fill="#14B8A6" opacity="0.10" filter="url(#blurGlow)"/>
+
+  <g opacity="0.16" stroke="#94A3B8">
+    <path d="M0 150H1600"/>
+    <path d="M0 300H1600"/>
+    <path d="M0 450H1600"/>
+    <path d="M0 600H1600"/>
+    <path d="M0 750H1600"/>
+    <path d="M200 0V900"/>
+    <path d="M400 0V900"/>
+    <path d="M600 0V900"/>
+    <path d="M800 0V900"/>
+    <path d="M1000 0V900"/>
+    <path d="M1200 0V900"/>
+    <path d="M1400 0V900"/>
+  </g>
+
+  <rect x="96" y="92" width="1408" height="716" rx="32" fill="rgba(15,23,42,0.66)" stroke="rgba(148,163,184,0.18)" filter="url(#softShadow)"/>
+
+  <g opacity="0.92">
+    <rect x="170" y="172" width="430" height="250" rx="24" fill="#0F172A" stroke="#334155"/>
+    <rect x="204" y="206" width="184" height="16" rx="8" fill="#1E293B"/>
+    <rect x="204" y="238" width="122" height="12" rx="6" fill="#1E293B"/>
+    <rect x="204" y="306" width="210" height="44" rx="14" fill="#020617" stroke="#334155"/>
+    <text x="232" y="335" fill="#93C5FD" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="24" font-weight="700">OpenClaw</text>
+    <circle cx="520" cy="223" r="9" fill="#34D399"/>
+    <circle cx="552" cy="223" r="9" fill="#60A5FA"/>
+    <circle cx="584" cy="223" r="9" fill="#A78BFA"/>
+    <text x="203" y="391" fill="#94A3B8" font-family="JetBrains Mono, Consolas, monospace" font-size="20">session startup · monitoring</text>
+  </g>
+
+  <g>
+    <rect x="506" y="320" width="600" height="250" rx="26" fill="#0B1220" stroke="url(#accent)" stroke-width="2.5"/>
+    <rect x="540" y="354" width="160" height="18" rx="9" fill="#162033"/>
+    <rect x="540" y="390" width="128" height="12" rx="6" fill="#1E293B"/>
+    <rect x="540" y="430" width="533" height="78" rx="18" fill="#020617" stroke="#243041"/>
+    <text x="572" y="480" fill="#E2E8F0" font-family="JetBrains Mono, Consolas, monospace" font-size="30">claude-agent / codex-agent</text>
+    <path d="M1110 445H1290" stroke="url(#accent2)" stroke-width="7" stroke-linecap="round"/>
+    <path d="M1260 412L1310 445L1260 478" stroke="url(#accent2)" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g opacity="0.96">
+    <rect x="1158" y="194" width="266" height="172" rx="24" fill="#0F172A" stroke="#334155"/>
+    <text x="1200" y="245" fill="#E5E7EB" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="700">Discord</text>
+    <text x="1200" y="286" fill="#93C5FD" font-family="JetBrains Mono, Consolas, monospace" font-size="22">thread routing</text>
+    <text x="1200" y="324" fill="#A5B4FC" font-family="JetBrains Mono, Consolas, monospace" font-size="22">reply-target map</text>
+  </g>
+
+  <g opacity="0.94">
+    <rect x="1120" y="522" width="304" height="196" rx="24" fill="#0F172A" stroke="#334155"/>
+    <text x="1162" y="575" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="28" font-weight="700">tmux runtime</text>
+    <text x="1162" y="618" fill="#86EFAC" font-family="JetBrains Mono, Consolas, monospace" font-size="22">hooks</text>
+    <text x="1240" y="618" fill="#64748B" font-family="JetBrains Mono, Consolas, monospace" font-size="22">•</text>
+    <text x="1264" y="618" fill="#93C5FD" font-family="JetBrains Mono, Consolas, monospace" font-size="22">monitor</text>
+    <text x="1162" y="655" fill="#C4B5FD" font-family="JetBrains Mono, Consolas, monospace" font-size="22">notifications</text>
+    <text x="1315" y="655" fill="#64748B" font-family="JetBrains Mono, Consolas, monospace" font-size="22">•</text>
+    <text x="1339" y="655" fill="#F9A8D4" font-family="JetBrains Mono, Consolas, monospace" font-size="22">bridge</text>
+  </g>
+
+  <g>
+    <text x="164" y="608" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="88" font-weight="800" letter-spacing="-2">cli-agents</text>
+    <text x="170" y="664" fill="#93C5FD" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="600">A unified runtime for terminal CLI agents in OpenClaw</text>
+    <text x="170" y="727" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="28">session startup · monitoring · thread routing · reply mapping</text>
+  </g>
+
+  <g opacity="0.8">
+    <path d="M611 233C667 233 712 278 712 334" stroke="url(#accent)" stroke-width="6" stroke-linecap="round"/>
+    <path d="M1011 582C1011 632 1051 672 1101 672" stroke="url(#accent)" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="712" cy="334" r="8" fill="#7DD3FC"/>
+    <circle cx="1101" cy="672" r="8" fill="#A78BFA"/>
+  </g>
+</svg>
