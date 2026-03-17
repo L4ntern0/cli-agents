@@ -113,6 +113,7 @@ These launchers are responsible for:
 - writing route files
 - starting monitors
 - injecting runtime context
+- sending one extra empty `Enter` on first startup to help unblock trust-directory / continue prompts in newly entered workdirs
 
 ### 2) Hook / monitor layer
 
