@@ -141,10 +141,14 @@ User chooses before launch:
 
 | Mode | Who Approves | Use Case |
 |------|-------------|----------|
-| **Codex auto** (`--full-auto`) | Codex decides | Routine dev, hands-off |
-| **OpenClaw approves** (default) | OpenClaw decides approve/reject | Sensitive ops, need oversight |
+| **Codex auto** (`--yolo`) | Codex decides | Routine dev, hands-off |
+| **OpenClaw approves** (`--approval`) | OpenClaw decides approve/reject | Sensitive ops, need oversight |
 
-Pane monitor runs in both modes (`--full-auto` occasionally still prompts for approval).
+`start_codex.sh` now defaults to **Codex auto** mode. Only an explicit `--approval` switches it back to approval-gated startup.
+
+The launcher also sends one extra empty `Enter` shortly after Codex CLI starts. This helps unblock first-run prompts such as trusting a newly entered workdir, so a fresh session is less likely to stall on its first screen.
+
+Pane monitor runs in both modes (`--yolo` occasionally still prompts for approval).
 
 ## Knowledge Base: OpenClaw Truly Understands Codex
 

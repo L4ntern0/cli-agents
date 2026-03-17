@@ -45,8 +45,12 @@ You can `tmux attach` anytime to see what Claude Code is doing, or even take ove
 
 | Mode | Who Approves | Use Case |
 |------|-------------|----------|
-| **Auto** (`--dangerously-skip-permissions`) | Claude Code decides | Routine dev, trusted projects |
-| **OpenClaw Approval** (default) | OpenClaw decides | Sensitive operations |
+| **Auto** (`--auto` / `--dangerously-skip-permissions`) | Claude Code decides | Routine dev, trusted projects |
+| **OpenClaw Approval** (`--approval`) | OpenClaw decides | Sensitive operations |
+
+`start_claude.sh` now defaults to **auto mode**. Only an explicit `--approval` switches it back to approval-gated startup.
+
+The launcher also sends one extra empty `Enter` shortly after Claude CLI starts. This helps unblock first-run prompts such as trusting a newly entered workdir, so a fresh session is less likely to stall on its first screen.
 
 ## File Structure
 
