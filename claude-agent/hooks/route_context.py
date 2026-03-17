@@ -128,10 +128,16 @@ def load_route_context(*, session_name: str | None = None, cwd: str | None = Non
     return {}
 
 
+def _normalize_chat_id(chat_id: str) -> str:
+    """Strip channel prefix like 'channel:' or 'thread:' for comparison."""
+    return chat_id.replace("channel:", "").replace("thread:", "").replace(":", "")
+
+
 def find_route_by_chat(*, chat_id: str, channel: str | None = None) -> dict[str, Any]:
     if not chat_id:
         return {}
     route_dir = ensure_route_dir()
+    normalized_chat_id = _normalize_chat_id(chat_id)
     candidates: list[dict[str, Any]] = []
     try:
         for path in route_dir.glob("*.json"):
@@ -141,7 +147,8 @@ def find_route_by_chat(*, chat_id: str, channel: str | None = None) -> dict[str,
                 continue
             if not isinstance(payload, dict):
                 continue
-            if str(payload.get("chat_id") or "") != str(chat_id):
+            route_chat_id = str(payload.get("chat_id") or "")
+            if _normalize_chat_id(route_chat_id) != normalized_chat_id:
                 continue
             if channel and str(payload.get("channel") or "") != str(channel):
                 continue

@@ -1,43 +1,47 @@
 #!/bin/bash
-# Codex TUI pane 监控器
+# Codex TUI pane 监控器 - 基于 prompt 状态检测
 # 用法: ./pane_monitor.sh <tmux-session-name>
-# 后台运行，检测审批等待和工作开始，按 route file 路由通知
+# 检测 prompt 消失 = 任务开始, prompt 出现 = 任务结束
 
 set -uo pipefail
 
 SESSION="${1:?Usage: $0 <tmux-session-name>}"
-CHECK_INTERVAL=5
+CHECK_INTERVAL=2
 LAST_STATE=""
-NOTIFIED_APPROVAL=""
+HAS_WORKING=0
+HAS_PROMPT=0
+INITIAL_DETECT_DONE="false"
+LAST_WORKING_END=0  # 上次 working 结束的时间戳
+QUIET_PERIOD_SECONDS=10  # 静默期：工作结束后多久内不重复发送通知
 CAPTURE_LINES=30
 LOG_FILE="/tmp/codex_monitor_${SESSION}.log"
 STATE_FILE="/tmp/codex_monitor_${SESSION}.state"
-
-# 持久化的通知状态 (跨重启)
-LAST_STATE="${LAST_STATE:-}"
-NOTIFIED_APPROVAL="${NOTIFIED_APPROVAL:-}"
-NOTIFIED_WORK_START="${NOTIFIED_WORK_START:-}"
+SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SEPARATOR="──────────────────"
 
 load_state() {
     if [ -f "$STATE_FILE" ]; then
         LAST_STATE="$(grep '^LAST_STATE=' "$STATE_FILE" 2>/dev/null | cut -d= -f2-)"
         NOTIFIED_APPROVAL="$(grep '^NOTIFIED_APPROVAL=' "$STATE_FILE" 2>/dev/null | cut -d= -f2-)"
-        NOTIFIED_WORK_START="$(grep '^NOTIFIED_WORK_START=' "$STATE_FILE" 2>/dev/null | cut -d= -f2-)"
+        LAST_WORKING_END="$(grep '^LAST_WORKING_END=' "$STATE_FILE" 2>/dev/null | cut -d= -f2-)"
     fi
+    # 如果没有保存的状态，需要检测初始状态
+    if [ -z "$LAST_STATE" ]; then
+        LAST_STATE="unknown"
+    fi
+    NOTIFIED_APPROVAL="${NOTIFIED_APPROVAL:-}"
+    LAST_WORKING_END="${LAST_WORKING_END:-0}"
 }
 
 save_state() {
     cat > "$STATE_FILE" <<EOF
 LAST_STATE=${LAST_STATE}
 NOTIFIED_APPROVAL=${NOTIFIED_APPROVAL}
-NOTIFIED_WORK_START=${NOTIFIED_WORK_START}
+LAST_WORKING_END=${LAST_WORKING_END:-0}
 EOF
 }
 
-# 启动时加载状态
 load_state
-SKILL_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-SEPARATOR="──────────────────"
 
 log() { echo "[$(date '+%H:%M:%S')] $1" >> "$LOG_FILE"; }
 
@@ -143,21 +147,55 @@ trap cleanup EXIT
 log "Monitor started for session: $SESSION"
 log "Routing via ${CHANNEL}:${CHAT_ID} account=${ACCOUNT:-} route_file=${ROUTE_FILE:-default-env} managed=${MANAGED:-false}"
 
+# 检测初始状态并同步 LAST_STATE（不发送通知）
+# 只有当状态从 idle → working 时才发送通知
+INITIAL_DETECT_DONE="false"
+if [ "$LAST_STATE" = "unknown" ]; then
+    if [ "$HAS_WORKING" -eq 1 ]; then
+        LAST_STATE="working"
+        log "Initial state detected: working"
+    else
+        LAST_STATE="idle"
+        log "Initial state detected: idle"
+    fi
+    save_state
+    INITIAL_DETECT_DONE="true"
+fi
+
+log "Initial state: $LAST_STATE"
+
 while true; do
     if ! tmux has-session -t "$SESSION" 2>/dev/null; then
         log "Session $SESSION gone, exiting"
         exit 0
     fi
 
-    # 仅监控由 codex-agent 管理的 session
     if [ "$MANAGED" != "true" ] || [ -z "$ROUTE_FILE" ]; then
         log "Session $SESSION is unmanaged, monitor exiting"
         exit 0
     fi
 
-    OUTPUT=$(tmux capture-pane -t "$SESSION" -p -S -"$CAPTURE_LINES" 2>/dev/null)
+    OUTPUT="$(tmux capture-pane -t "$SESSION" -p -S -"$CAPTURE_LINES" 2>/dev/null)"
+    
+    # 检测 "Working (" 状态 - 这比 prompt 更可靠
+    # 当 "Working (" 出现时，任务正在运行
+    HAS_WORKING=0
+    if echo "$OUTPUT" | grep -q "Working ("; then
+        HAS_WORKING=1
+    fi
+    
+    # 只有当 "Working (" 不在时，才检查 prompt
+    # Codex 有时会同时显示 Working 和 prompt，但 Working 才是真实状态
+    if [ "$HAS_WORKING" -eq 0 ]; then
+        # 检测 › 或 > prompt
+        if echo "$OUTPUT" | grep -qE '(^|[[:space:]])›([[:space:]]|$)'; then
+            HAS_PROMPT=1
+        elif echo "$OUTPUT" | grep -qE '(^|[[:space:]])>([[:space:]]|$)'; then
+            HAS_PROMPT=1
+        fi
+    fi
 
-    # 审批检测
+    # 审批检测 - 最高优先级
     if echo "$OUTPUT" | grep -q "Would you like to run\|Press enter to confirm\|approve this\|allow this"; then
         CMD=$(echo "$OUTPUT" | grep '^\s*\$' | tail -1 | sed 's/^\s*\$ //')
         STATE="approval:$CMD"
@@ -176,52 +214,35 @@ command: ${CMD:-unknown}
             wake_agent "$AGENT_MSG"
             log "Approval detected: $CMD"
         fi
-    # 空闲状态检测 - 当出现 › 提示符时（最可靠）
-    elif echo "$OUTPUT" | grep -q "›"; then
-        if [ "$LAST_STATE" = "working" ]; then
-            LAST_STATE="idle"
-            NOTIFIED_APPROVAL=""
-            NOTIFIED_WORK_START=""
-            save_state
-            log "Back to idle (› prompt detected)"
-        fi
-    # 工作状态检测 - 使用更可靠的模式
-    # 优先检测 "Working (" 模式（最可靠）
-    elif echo "$OUTPUT" | grep -q "Working ("; then
-        if [ "$LAST_STATE" != "working" ]; then
-            LAST_STATE="working"
-            log "Transitioned to working (Working pattern detected)"
-            if [ -z "$NOTIFIED_WORK_START" ]; then
-                NOTIFIED_WORK_START="sent"
-                save_state
-                if [ -n "$CHAT_ID" ] && [ -n "$CHANNEL" ]; then
-                    MSG="$(build_work_start_message)"
-                    if notify_thread "$MSG" "work-start"; then
-                        log "Work-start notification sent"
-                    else
-                        log "⚠️ Work-start notification failed"
-                    fi
-                fi
+    # Working 出现 = 任务开始 (从 idle -> working)
+    # 跳过初始状态检测后的第一次检查
+    # 只有在静默期过后才发送通知（避免同一任务反复通知）
+    elif [ "$INITIAL_DETECT_DONE" != "true" ] && [ "$HAS_WORKING" -eq 1 ] && [ "$LAST_STATE" = "idle" ]; then
+        CURRENT_TIME=$(date +%s)
+        TIME_SINCE_LAST_WORKING=$((CURRENT_TIME - LAST_WORKING_END))
+        
+        LAST_STATE="working"
+        save_state
+        log "Working detected, transitioned to working (last working ended ${TIME_SINCE_LAST_WORKING}s ago)"
+        
+        # 只有静默期超过阈值时才发送通知
+        if [ "$TIME_SINCE_LAST_WORKING" -ge "$QUIET_PERIOD_SECONDS" ]; then
+            MSG="$(build_work_start_message)"
+            if notify_thread "$MSG" "work-start"; then
+                log "Work-start notification sent (quiet period: ${TIME_SINCE_LAST_WORKING}s)"
+            else
+                log "⚠️ Work-start notification failed"
             fi
+        else
+            log "Notification skipped (quiet period only ${TIME_SINCE_LAST_WORKING}s, need ${QUIET_PERIOD_SECONDS}s)"
         fi
-    # 备用：关键词匹配（作为后备检测）
-    elif echo "$OUTPUT" | grep -qE "Thinking|Creating|Editing|Running|Reading|Searching|Writing|Determining"; then
-        if [ "$LAST_STATE" != "working" ]; then
-            LAST_STATE="working"
-            log "Transitioned to working (keyword fallback detected)"
-            if [ -z "$NOTIFIED_WORK_START" ]; then
-                NOTIFIED_WORK_START="sent"
-                save_state
-                if [ -n "$CHAT_ID" ] && [ -n "$CHANNEL" ]; then
-                    MSG="$(build_work_start_message)"
-                    if notify_thread "$MSG" "work-start"; then
-                        log "Work-start notification sent"
-                    else
-                        log "⚠️ Work-start notification failed"
-                    fi
-                fi
-            fi
-        fi
+    # Working 消失且 Prompt 出现 = 任务结束 (从 working -> idle)
+    elif [ "$HAS_WORKING" -eq 0 ] && [ "$HAS_PROMPT" -eq 1 ] && [ "$LAST_STATE" = "working" ]; then
+        LAST_WORKING_END=$(date +%s)
+        LAST_STATE="idle"
+        NOTIFIED_APPROVAL=""
+        save_state
+        log "Working gone + prompt visible, back to idle (working ended at ${LAST_WORKING_END})"
     fi
 
     sleep "$CHECK_INTERVAL"
