@@ -190,6 +190,12 @@ if ! tmux send-keys -t "$SESSION" "$CLAUDE_CMD" Enter; then
     exit 1
 fi
 
+# 兼容首次进入新目录时的“信任目录 / 继续确认”提示：默认补发一次空回车
+sleep 1
+if ! tmux send-keys -t "$SESSION" Enter; then
+    echo "⚠️ Failed to send initial extra Enter to tmux session: $SESSION"
+fi
+
 sleep 2
 if ! tmux has-session -t "$SESSION" 2>/dev/null; then
     echo "❌ tmux session died immediately, Claude Code may have failed to start"

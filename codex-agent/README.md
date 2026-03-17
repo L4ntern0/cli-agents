@@ -185,6 +185,8 @@ Codex 弹出审批提示 → pane_monitor.sh 检测到关键词
 
 `start_codex.sh` 现在默认使用 **Codex 自动**（也就是默认免审批启动）；只有显式传 `--approval` 才切回人工审批模式。
 
+另外，启动器现在还会在 Codex CLI 拉起后默认补发一次空回车，用来兼容首次进入新目录时可能出现的“信任目录 / 继续确认”提示，避免新 session 卡在第一屏等待确认。
+
 两种模式下 pane monitor 都会启动（`--full-auto` 偶尔也会弹审批）。
 
 ## 知识库：OpenClaw 真正理解 Codex

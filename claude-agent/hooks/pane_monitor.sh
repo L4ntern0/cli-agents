@@ -176,7 +176,7 @@ INITIAL_OUTPUT="$(tmux capture-pane -t "$SESSION" -p -S -"$CAPTURE_LINES" 2>/dev
 
 # 检测初始状态并同步 LAST_STATE（不发送通知）
 if [ "$LAST_STATE" = "unknown" ]; then
-    if echo "$INITIAL_OUTPUT" | grep -qE '(^|[[:space:]])>([[:space:]]|$)'; then
+    if echo "$INITIAL_OUTPUT" | grep -qE '(❯|›|>)'; then
         LAST_STATE="idle"
         log "Initial state detected: idle"
     else
@@ -202,17 +202,10 @@ while true; do
 
     OUTPUT="$(tmux capture-pane -t "$SESSION" -p -S -"$CAPTURE_LINES" 2>/dev/null)"
 
-    # 检测 prompt 状态: › 或 > 出现在行首/行尾 = idle
+    # 检测 prompt 状态: Claude 当前常见 prompt 为 ❯ / › / >
     HAS_PROMPT=0
-    if echo "$OUTPUT" | grep -qE '(^|[[:space:]])›([[:space:]]|$)'; then
+    if echo "$OUTPUT" | grep -qE '(❯|›|>)'; then
         HAS_PROMPT=1
-    fi
-    
-    # 备用: 检测 > 提示符
-    if [ "$HAS_PROMPT" -eq 0 ]; then
-        if echo "$OUTPUT" | grep -qE '(^|[[:space:]])>([[:space:]]|$)'; then
-            HAS_PROMPT=1
-        fi
     fi
 
     # 审批检测 - 最高优先级

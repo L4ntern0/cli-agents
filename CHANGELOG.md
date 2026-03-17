@@ -9,6 +9,11 @@ All notable changes to `cli-agents` are documented in this file.
   - now resolves the active tmux pane instead of assuming `:0.0`
   - now waits for a ready Claude prompt before sending input, reducing dropped first-message cases during startup
   - now recognizes the current `❯` Claude prompt in addition to older prompt variants
+- `claude-agent/hooks/start_claude.sh` and `codex-agent/hooks/start_codex.sh`
+  - now send one extra empty `Enter` shortly after startup by default
+  - this helps unblock first-run prompts such as trusting a newly entered workdir
+- `claude-agent/hooks/pane_monitor.sh`
+  - now treats the current Claude `❯` prompt as an idle-state indicator during monitor state detection
 - `codex-agent/hooks/forward_to_session.py`
   - now mirrors the same active-pane and ready-state forwarding behavior for Codex sessions
 - `claude-agent/hooks/on_complete.py` and `codex-agent/hooks/on_complete.py`

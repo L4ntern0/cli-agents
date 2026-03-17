@@ -160,6 +160,8 @@ Claude Code 弹出权限提示 → pane_monitor.sh 检测到关键词
 
 `start_claude.sh` 现在默认使用 **自动模式**（也就是默认免权限启动）；只有显式传 `--approval` 才切回人工审批模式。
 
+另外，启动器现在还会在 Claude CLI 拉起后默认补发一次空回车，用来兼容首次进入新目录时可能出现的“信任目录 / 继续确认”提示，避免新 session 卡在第一屏等待确认。
+
 两种模式下 pane monitor 都会启动。
 
 ## 知识库：OpenClaw 真正理解 Claude Code
