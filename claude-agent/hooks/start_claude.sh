@@ -102,8 +102,8 @@ if ! command -v claude &>/dev/null; then
 fi
 
 if [ ! -d "$WORKDIR" ]; then
-    echo "❌ Directory not found: $WORKDIR"
-    exit 1
+    echo "📁 Workdir not found, creating: $WORKDIR"
+    mkdir -p "$WORKDIR"
 fi
 
 echo "🔍 Running claude-agent hook preflight..."

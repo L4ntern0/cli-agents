@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.2.1] - 2026-03-18
+
+### Fixed
+- `hooks/pane_monitor.sh`
+  - now resets `HAS_PROMPT=0` on every monitor loop iteration so prompt detection cannot leak across iterations and falsely affect `working -> idle` state transitions
+
+### Checked
+- `bridge/agent_session_router.py`, `hooks/forward_to_session.py`, `hooks/on_complete.py`, and `hooks/pane_monitor.sh` were reviewed against the recent Claude thread-routing fixes; no additional Codex-side reply-routing gaps were found beyond the monitor state-reset bug above.
+
 ## [0.2.0] - 2026-02-26
 
 ### Fixed

@@ -123,6 +123,12 @@ Claude Code 完成 turn → on_complete.py
 
 此外，当 Claude Code 从等待输入态切换到实际工作态时，`pane_monitor.sh` 也会向当前绑定 thread 主动发送一条“开始处理任务”通知，内容包含 `session`、`workdir` 与 `trace_id`，便于确认任务已开始执行并与后续日志对账。
 
+2026-03-18 起，thread 回传链路又补了一层稳态修复：
+- `forward_to_session.py` 不再假设固定 tmux pane，而是先解析当前活动 pane；
+- 发送前会等待 Claude Code 进入可输入状态，并识别当前常见的 `❯` prompt，避免刚启动时首条消息被吞；
+- 完成通知与 monitor 通知会从真实的 `openclaw message send --json` 输出里递归提取 `messageId`，确保 reply-route map 能稳定记录；
+- 因此，用户现在可以直接“回复 Claude 刚回到 thread 的那条消息”，路由器会优先通过 `reply-target-message-id` 把消息送回原 tmux session。
+
 **2. tmux pane monitor（审批等待）**
 
 Claude Code 的 Stop hook 不覆盖审批场景，所以用 `pane_monitor.sh` 监控 tmux 输出：

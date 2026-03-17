@@ -89,18 +89,7 @@ notify_thread() {
     local output
     output="$("${cmd[@]}" 2>>"$LOG_FILE")"
     local message_id
-    message_id="$(printf '%s' "$output" | python3 - <<'PY'
-import json, sys
-text = sys.stdin.read().strip()
-if not text:
-    raise SystemExit(0)
-try:
-    payload = json.loads(text)
-except json.JSONDecodeError:
-    raise SystemExit(0)
-print(payload.get('messageId', '') or '')
-PY
-)"
+    message_id="$(printf '%s' "$output" | python3 "$SKILL_DIR/../bridge/extract_message_id.py")"
     if [ -n "$message_id" ]; then
         store_reply_mapping "$message_id" "$event_type"
         log "reply-map stored: message_id=$message_id kind=codex session=$SESSION event=$event_type"
@@ -177,6 +166,9 @@ while true; do
 
     OUTPUT="$(tmux capture-pane -t "$SESSION" -p -S -"$CAPTURE_LINES" 2>/dev/null)"
     
+    # 每轮都重置瞬时检测状态，避免沿用上一次循环的 prompt 结果
+    HAS_PROMPT=0
+
     # 检测 "Working (" 状态 - 这比 prompt 更可靠
     # 当 "Working (" 出现时，任务正在运行
     HAS_WORKING=0

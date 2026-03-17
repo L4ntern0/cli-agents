@@ -2,6 +2,8 @@
 
 English | **[中文](README_zh.md)**
 
+> 2026-03-18 update: Discord thread routing has been re-validated end-to-end. Managed `claude-agent` / `codex-agent` sessions now use active-pane + ready-state forwarding, completion/monitor notifications extract nested `messageId` values reliably, and replying directly to an agent's thread message can route back through `reply-target-message-id` to the original tmux session.
+
 > `cli-agents` is a consolidated repository for OpenClaw / agent-deck terminal agent workflows. It brings together `codex-agent`, `claude-agent`, and shared bridge utilities into a single versioned runtime that handles **session startup, monitoring, notifications, thread routing, reply-target mapping, and multi-session coordination**.
 
 ## What is this?

@@ -22,6 +22,7 @@ from route_context import resolve_route  # noqa: E402
 
 LOG_FILE = "/tmp/codex_notify_log.txt"
 REPLY_ROUTE_MAP = CURRENT_DIR.parent.parent / "bridge" / "reply_route_map.py"
+EXTRACT_MESSAGE_ID = CURRENT_DIR.parent.parent / "bridge" / "extract_message_id.py"
 DISCORD_MESSAGE_LIMIT = 1900
 
 
@@ -71,11 +72,14 @@ def _send_message(*, channel: str, chat_id: str, account: str, msg: str) -> tupl
                 return False, ""
             message_id = ""
             if stdout.strip():
-                try:
-                    payload: dict[str, Any] = json.loads(stdout)
-                    message_id = str(payload.get("messageId") or "")
-                except json.JSONDecodeError:
-                    pass
+                extract = subprocess.run(
+                    [sys.executable, str(EXTRACT_MESSAGE_ID)],
+                    input=stdout,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
+                message_id = extract.stdout.strip()
             return True, message_id
         except subprocess.TimeoutExpired:
             log("channel notify timeout (10s), process still running")

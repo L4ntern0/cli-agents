@@ -2,6 +2,36 @@
 
 All notable changes to `cli-agents` are documented in this file.
 
+## [0.1.1] - 2026-03-18
+
+### Fixed
+- `claude-agent/hooks/forward_to_session.py`
+  - now resolves the active tmux pane instead of assuming `:0.0`
+  - now waits for a ready Claude prompt before sending input, reducing dropped first-message cases during startup
+  - now recognizes the current `❯` Claude prompt in addition to older prompt variants
+- `codex-agent/hooks/forward_to_session.py`
+  - now mirrors the same active-pane and ready-state forwarding behavior for Codex sessions
+- `claude-agent/hooks/on_complete.py` and `codex-agent/hooks/on_complete.py`
+  - now extract outbound `messageId` from real `openclaw message send --json` output instead of assuming a top-level field
+- `claude-agent/hooks/pane_monitor.sh` and `codex-agent/hooks/pane_monitor.sh`
+  - now use the shared message-id extractor so monitor-generated notifications also write reply-route mappings reliably
+
+### Added
+- `bridge/extract_message_id.py`
+  - shared helper that recursively extracts `messageId` / `message_id` from nested OpenClaw plugin JSON output
+
+### Fixed
+- `codex-agent/hooks/pane_monitor.sh`
+  - now resets `HAS_PROMPT=0` on every monitor loop iteration so prompt state does not leak across checks and misclassify `working -> idle` transitions
+
+### Verified
+- End-to-end Discord thread routing now works for the `claude-agent` demo flow:
+  - thread message -> tmux session
+  - Claude reply -> Discord thread
+  - reply message id -> reply route map
+  - Discord reply-to -> original tmux session via `reply-target-message-id`
+- `claude-agent/hooks/pane_monitor.sh` was checked for the same state-reset issue and already resets `HAS_PROMPT` correctly each loop.
+
 ## [0.1.0] - 2026-03-16
 
 Initial consolidated `cli-agents` repository release.

@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.0.1] - 2026-03-18
+
+### Fixed
+- `hooks/forward_to_session.py`
+  - now resolves the active tmux pane instead of assuming window `0.0`
+  - now waits for Claude Code to reach a ready prompt before sending text
+  - now recognizes the `❯` prompt variant seen in current Claude Code builds
+- `hooks/on_complete.py`
+  - now extracts outbound `messageId` from nested `openclaw message send --json` payloads so reply-route mappings are stored reliably
+- `hooks/pane_monitor.sh`
+  - now uses the shared message-id extractor for monitor-generated notifications as well
+
+### Added
+- `../bridge/extract_message_id.py` helper for recursive `messageId` / `message_id` extraction from OpenClaw JSON output
+
+### Verified
+- Discord thread reply routing was re-tested end-to-end with a managed `cli-agents-demo` session:
+  - forwarded thread message entered the tmux session
+  - Claude completion reply returned to the same Discord thread
+  - replying directly to that Claude message selected the original session via `reply-target-message-id`
+
 ## [2.0.0] - 2026-03-13
 
 ### Changed (Breaking)

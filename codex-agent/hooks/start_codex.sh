@@ -34,8 +34,8 @@ if ! command -v codex &>/dev/null; then
 fi
 
 if [ ! -d "$WORKDIR" ]; then
-    echo "❌ Directory not found: $WORKDIR"
-    exit 1
+    echo "📁 Workdir not found, creating: $WORKDIR"
+    mkdir -p "$WORKDIR"
 fi
 
 echo "🔍 Running codex-agent hook preflight..."

@@ -124,18 +124,7 @@ notify_thread() {
     local output
     output="$("${cmd[@]}" 2>>"$LOG_FILE")"
     local message_id
-    message_id="$(printf '%s' "$output" | python3 - <<'PY'
-import json, sys
-text = sys.stdin.read().strip()
-if not text:
-    raise SystemExit(0)
-try:
-    payload = json.loads(text)
-except json.JSONDecodeError:
-    raise SystemExit(0)
-print(payload.get('messageId', '') or '')
-PY
-)"
+    message_id="$(printf '%s' "$output" | python3 "$SKILL_DIR/../bridge/extract_message_id.py")"
     if [ -n "$message_id" ]; then
         store_reply_mapping "$message_id" "$event_type"
         log "reply-map stored: message_id=$message_id kind=claude session=$SESSION event=$event_type"
