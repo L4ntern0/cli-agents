@@ -132,16 +132,18 @@ CLAUDE_AGENT_SOURCE_ACCOUNT=coder \
 
 ### Method 1: >> Prefix (Recommended)
 
-Prefix your message with `>>` to have it processed and forwarded:
+Prefix your message with `>>` to have it refined and forwarded to the bound session:
 
 ```
 >> 帮我检查这段代码
 ```
 
 This will:
-1. Process the request (improve/expand if needed)
-2. Forward to the bound session
-3. Confirm with "已转发到 <session>"
+1. Strip the `>>` prefix
+2. Lightly polish or expand the message so it works better as a CLI-agent prompt
+3. Do **not** explain the request, answer it directly, or change the original intent
+4. Forward the refined message to the bound session
+5. Confirm with `已转发到 <session>`
 
 ### Method 2: Router Auto-Forward
 
