@@ -115,6 +115,12 @@ Claude Code 完成 turn → on_complete.py
 
 用户在 Telegram 上能看到 Claude Code 每次回复的内容，相当于实时监控。
 
+若单次回复过长，`on_complete.py` 现在会对 Discord 通知执行**自动分片发送**，而不是简单截断：
+- 超过 Discord 安全长度时自动拆成多条；
+- 每条都会带分片编号，如 `[1/N]`、`[2/N]`；
+- 分片逻辑优先按空行、换行、空格切分；
+- 对 fenced code block（```）做了代码块感知处理：若在代码块中间切开，会自动在当前分片补 closing fence，并在下一分片补回 opening fence，避免 Discord 渲染错乱。
+
 此外，当 Claude Code 从等待输入态切换到实际工作态时，`pane_monitor.sh` 也会向当前绑定 thread 主动发送一条“开始处理任务”通知，内容包含 `session`、`workdir` 与 `trace_id`，便于确认任务已开始执行并与后续日志对账。
 
 **2. tmux pane monitor（审批等待）**

@@ -146,6 +146,12 @@ Codex 完成 turn → on_complete.py
 
 用户在 Telegram / Discord thread 上能看到 Codex 每次回复的完整内容，相当于实时监控。
 
+若单次回复过长，`on_complete.py` 现在会对 Discord 通知执行**自动分片发送**，而不是简单截断：
+- 超过 Discord 安全长度时自动拆成多条；
+- 每条都会带分片编号，如 `[1/N]`、`[2/N]`；
+- 分片逻辑优先按空行、换行、空格切分；
+- 对 fenced code block（```）做了代码块感知处理：若在代码块中间切开，会自动在当前分片补 closing fence，并在下一分片补回 opening fence，避免 Discord 渲染错乱。
+
 > 兼容性说明：在部分 Codex 版本中，`agent-turn-complete` payload 可能不会稳定回传 `CODEX_AGENT_SESSION`。当前实现会优先按 session marker 识别；若缺失，则按 `cwd` 回退解析 route，从而继续把完成通知发回正确的受管 thread。
 
 **2. tmux pane monitor（审批等待）**

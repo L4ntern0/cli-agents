@@ -22,6 +22,7 @@ from route_context import resolve_route  # noqa: E402
 
 LOG_FILE = "/tmp/codex_notify_log.txt"
 REPLY_ROUTE_MAP = CURRENT_DIR.parent.parent / "bridge" / "reply_route_map.py"
+DISCORD_MESSAGE_LIMIT = 1900
 
 
 def log(msg: str):
@@ -51,7 +52,7 @@ def _store_reply_mapping(*, message_id: str, kind: str, session_name: str, chann
         log(f"reply-map store error: {e}")
 
 
-def notify_user(*, channel: str, chat_id: str, account: str, msg: str, kind: str = "", session_name: str = "", trace_id: str = "", route_file: str = "", event_type: str = "task-reply") -> bool:
+def _send_message(*, channel: str, chat_id: str, account: str, msg: str) -> tuple[bool, str]:
     try:
         cmd = [
             "openclaw", "message", "send",
@@ -67,7 +68,7 @@ def notify_user(*, channel: str, chat_id: str, account: str, msg: str, kind: str
             stdout, stderr = proc.communicate(timeout=10)
             if proc.returncode != 0:
                 log(f"channel notify failed (exit {proc.returncode}): {stderr[:200]}")
-                return False
+                return False, ""
             message_id = ""
             if stdout.strip():
                 try:
@@ -75,25 +76,113 @@ def notify_user(*, channel: str, chat_id: str, account: str, msg: str, kind: str
                     message_id = str(payload.get("messageId") or "")
                 except json.JSONDecodeError:
                     pass
-            if message_id and kind and session_name:
-                _store_reply_mapping(
-                    message_id=message_id,
-                    kind=kind,
-                    session_name=session_name,
-                    channel=channel,
-                    chat_id=chat_id,
-                    trace_id=trace_id,
-                    route_file=route_file,
-                    event_type=event_type,
-                )
-                log(f"reply-map stored: message_id={message_id} kind={kind} session={session_name} event={event_type}")
+            return True, message_id
         except subprocess.TimeoutExpired:
             log("channel notify timeout (10s), process still running")
-        log(f"channel notify sent to {channel}:{chat_id} account={account or '-'}")
-        return True
+            return False, ""
     except Exception as e:
         log(f"channel notify error: {e}")
-        return False
+        return False, ""
+
+
+def _find_split_at(text: str, available: int) -> int:
+    part = text[:available]
+    if len(text) <= available:
+        return len(part)
+    candidates = [part.rfind("\n```"), part.rfind("\n\n"), part.rfind("\n"), part.rfind(" ")]
+    split_at = max(candidates)
+    return split_at if split_at > available // 3 else len(part)
+
+
+def _extract_open_fence(text: str) -> str:
+    open_fence = "```"
+    in_fence = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            if in_fence:
+                in_fence = False
+                open_fence = "```"
+            else:
+                in_fence = True
+                open_fence = stripped
+    return open_fence if in_fence else ""
+
+
+def split_discord_message(header: str, body: str, limit: int = DISCORD_MESSAGE_LIMIT) -> list[str]:
+    header = header.rstrip()
+    body = body.strip()
+
+    if not body:
+        return [header[:limit] if header else ""]
+
+    raw_chunks: list[tuple[str, str]] = []
+    remaining = body
+    carry_fence = ""
+    while remaining:
+        current_prefix = ""
+        if carry_fence:
+            current_prefix += f"{carry_fence}\n"
+        closing_reserve = 4 if carry_fence else 0
+        available = max(1, limit - closing_reserve)
+
+        split_at = _find_split_at(remaining, available)
+        part = remaining[:split_at].rstrip()
+        if not part:
+            part = remaining[:available]
+
+        open_fence = _extract_open_fence(part)
+        chunk_body = part
+        next_carry_fence = ""
+        if open_fence:
+            chunk_body = f"{part}\n```"
+            next_carry_fence = open_fence
+
+        raw_chunks.append((current_prefix, chunk_body))
+        remaining = remaining[len(part):].lstrip()
+        carry_fence = next_carry_fence
+
+    total = len(raw_chunks)
+    chunks: list[str] = []
+    for idx, (prefix, chunk_body) in enumerate(raw_chunks, start=1):
+        number_tag = f"[{idx}/{total}]"
+        numbered_header = f"{header}\n{number_tag}" if header else number_tag
+        current_prefix = f"{numbered_header}\n"
+        if prefix:
+            current_prefix += prefix
+        chunks.append(f"{current_prefix}{chunk_body}"[:limit])
+
+    return chunks
+
+
+def notify_user(*, channel: str, chat_id: str, account: str, msg: str, kind: str = "", session_name: str = "", trace_id: str = "", route_file: str = "", event_type: str = "task-reply") -> bool:
+    chunks = [msg] if len(msg) <= DISCORD_MESSAGE_LIMIT else split_discord_message("", msg, DISCORD_MESSAGE_LIMIT)
+    ok_any = False
+    first_message_id = ""
+
+    for idx, chunk in enumerate(chunks):
+        ok, message_id = _send_message(channel=channel, chat_id=chat_id, account=account, msg=chunk)
+        if not ok:
+            return False
+        ok_any = True
+        if idx == 0:
+            first_message_id = message_id
+
+    if first_message_id and kind and session_name:
+        _store_reply_mapping(
+            message_id=first_message_id,
+            kind=kind,
+            session_name=session_name,
+            channel=channel,
+            chat_id=chat_id,
+            trace_id=trace_id,
+            route_file=route_file,
+            event_type=event_type,
+        )
+        log(f"reply-map stored: message_id={first_message_id} kind={kind} session={session_name} event={event_type}")
+
+    log(f"channel notify sent to {channel}:{chat_id} account={account or '-'} chunks={len(chunks)}")
+    return ok_any
 
 
 def wake_agent(*, channel: str, account: str, agent_name: str, msg: str) -> bool:
@@ -128,6 +217,10 @@ def extract_session_name(notification: dict[str, Any]) -> str:
     return ""
 
 
+def build_message(header: str, body: str) -> str:
+    return f"{header.rstrip()}\n{body.strip()}" if body.strip() else header.rstrip()
+
+
 def main() -> int:
     if len(sys.argv) < 2:
         return 0
@@ -141,9 +234,9 @@ def main() -> int:
     if notification.get("type") != "agent-turn-complete":
         return 0
 
-    summary = notification.get("last-assistant-message", "Turn Complete!")
-    cwd = notification.get("cwd", "unknown")
-    thread_id = notification.get("thread-id", "unknown")
+    summary = str(notification.get("last-assistant-message", "Turn Complete!"))
+    cwd = str(notification.get("cwd", "unknown"))
+    thread_id = str(notification.get("thread-id", "unknown"))
     session_name = extract_session_name(notification)
 
     route: dict[str, Any] = {}
@@ -155,13 +248,10 @@ def main() -> int:
         if route.get("managed") == "true" and route.get("route_file"):
             log(f"Recovered managed Codex session by cwd fallback: session={session_name}, cwd={cwd}, thread={thread_id}")
 
-    # Only allow coding agent to trigger notifications; skip main/other agents
     if not session_name or route.get("managed") != "true" or not route.get("route_file"):
         log(f"Ignoring unmanaged Codex turn: missing session marker, cwd={cwd}, thread={thread_id}")
         return 0
 
-    # Gate: only respond to configured coding agent, skip other agents to avoid balance issues
-    # Configure via env var: CODING_AGENT_NAME (default: "coding")
     allowed_agent = os.environ.get("CODING_AGENT_NAME", "coding")
     if route.get("agent_name") != allowed_agent:
         log(f"Ignoring non-coding agent trigger: agent_name={route.get('agent_name')}, expected={allowed_agent}, session={session_name}")
@@ -178,12 +268,13 @@ def main() -> int:
     log(f"Routing via {channel}:{chat_id} account={account or '-'} route_file={route_file or 'default-env'}")
     log(f"Summary: {summary[:200]}")
 
-    msg = (
+    header = (
         f"🔔 Codex 任务回复\n"
         f"🧭 session: {session_name}\n"
         f"📁 {cwd}\n"
-        f"💬 {summary}"
+        f"💬"
     )
+    msg = build_message(header, summary)
     notify_ok = notify_user(
         channel=channel,
         chat_id=chat_id,
