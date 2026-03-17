@@ -107,7 +107,10 @@ if [ ! -d "$WORKDIR" ]; then
 fi
 
 echo "🔍 Running claude-agent hook preflight..."
-if ! python3 "$SKILL_DIR/../../../scripts/check_agent_hooks.py" claude; then
+if ! (
+    cd "$SKILL_DIR"
+    python3 scripts/check_agent_hooks.py
+); then
     echo "❌ claude-agent hook health check failed"
     echo "   Fix hook syntax/import errors before starting the session."
     exit 1
@@ -115,10 +118,14 @@ fi
 
 mkdir -p "$ROUTE_DIR"
 if [ -n "$SESSION_CHAT_ID" ]; then
-    if ! python3 "$SKILL_DIR/../../bridge/check_route_conflicts.py" \
-        --session "$SESSION" \
-        --chat-id "$SESSION_CHAT_ID" \
-        --channel "$SESSION_CHANNEL"; then
+    if ! (
+        cd "$SKILL_DIR"
+        python3 ../bridge/check_route_conflicts.py \
+            --kind claude \
+            --session "$SESSION" \
+            --chat-id "$SESSION_CHAT_ID" \
+            --channel "$SESSION_CHANNEL"
+    ); then
         echo "❌ claude-agent route preflight failed"
         exit 1
     fi
