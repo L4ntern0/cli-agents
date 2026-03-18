@@ -191,6 +191,7 @@ def resolve_route(*, session_name: str | None = None, cwd: str | None = None, ch
         "trace_id": route_trace_id(route, prefix="route"),
         "updated_at": str(route.get("updated_at") or ""),
         "managed": "true" if route else "false",
+        "notify": str(route.get("notify") if route else "true"),
     }
     log_route_decision(
         "resolve-route",

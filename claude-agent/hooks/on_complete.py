@@ -165,28 +165,32 @@ def split_discord_message(header: str, body: str, limit: int = DISCORD_MESSAGE_L
 def notify_user(*, channel: str, chat_id: str, account: str, msg: str, kind: str = "", session_name: str = "", trace_id: str = "", route_file: str = "", event_type: str = "task-reply") -> bool:
     chunks = [msg] if len(msg) <= DISCORD_MESSAGE_LIMIT else split_discord_message("", msg, DISCORD_MESSAGE_LIMIT)
     ok_any = False
-    first_message_id = ""
+    mapped_message_ids: list[str] = []
 
-    for idx, chunk in enumerate(chunks):
+    for chunk in chunks:
         ok, message_id = _send_message(channel=channel, chat_id=chat_id, account=account, msg=chunk)
         if not ok:
             return False
         ok_any = True
-        if idx == 0:
-            first_message_id = message_id
+        if message_id:
+            mapped_message_ids.append(message_id)
 
-    if first_message_id and kind and session_name:
-        _store_reply_mapping(
-            message_id=first_message_id,
-            kind=kind,
-            session_name=session_name,
-            channel=channel,
-            chat_id=chat_id,
-            trace_id=trace_id,
-            route_file=route_file,
-            event_type=event_type,
+    if mapped_message_ids and kind and session_name:
+        for message_id in mapped_message_ids:
+            _store_reply_mapping(
+                message_id=message_id,
+                kind=kind,
+                session_name=session_name,
+                channel=channel,
+                chat_id=chat_id,
+                trace_id=trace_id,
+                route_file=route_file,
+                event_type=event_type,
+            )
+        log(
+            f"reply-map stored: count={len(mapped_message_ids)} first={mapped_message_ids[0]} "
+            f"kind={kind} session={session_name} event={event_type}"
         )
-        log(f"reply-map stored: message_id={first_message_id} kind={kind} session={session_name} event={event_type}")
 
     log(f"notify sent to {channel}:{chat_id} chunks={len(chunks)}")
     return ok_any
@@ -273,7 +277,20 @@ def main() -> int:
     hook_event = str(notification.get("hook_event_name", "Stop"))
     cwd = str(notification.get("cwd", os.getcwd()))
     summary = extract_summary(notification)
-    route = resolve_route(cwd=cwd)
+
+    # Derive session_name from notification session_id (format: UUID or tmux-style name)
+    derived_session_name = session_id
+    route = resolve_route(session_name=derived_session_name, cwd=cwd)
+
+    # Reject unmanaged sessions: no route file or explicitly not managed
+    if route.get("managed") != "true" or not route.get("route_file"):
+        log(f"Ignoring unmanaged Claude turn: managed={route.get('managed')}, route_file={route.get('route_file') or '(none)'}, cwd={cwd}")
+        return 0
+
+    # Reject sessions explicitly started with --no-notify
+    if route.get("notify") == "false":
+        log(f"Ignoring Claude turn with notify=false: cwd={cwd}")
+        return 0
 
     allowed_agent = os.environ.get("CODING_AGENT_NAME", "coding")
     if route.get("agent_name") != allowed_agent:

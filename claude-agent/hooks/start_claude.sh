@@ -18,10 +18,12 @@ usage() {
 用法:
   ./start_claude.sh <session-name> <workdir> [--approval|--auto] \
     [--chat-id <id>] [--channel <channel>] [--account <account>] [--agent <agent>]
+    [--no-notify]
 
 参数：
   --approval           使用 claude 默认权限模式（需要时再审批）
   --auto               使用 claude --dangerously-skip-permissions
+  --no-notify          禁止本 session 的完成通知发到 Discord（手动测试时用）
   --chat-id <id>       本 session 的通知目标（如 Discord 线程 channel:123）
   --channel <channel>  通知通道（如 discord / telegram）
   --account <account>  OpenClaw 通道账号名（如 coder）
@@ -31,6 +33,7 @@ usage() {
   - 默认模式是 --auto，即默认免权限启动
   - 未传的参数会回退到当前 shell / ~/.zshrc / ~/.bashrc 中已有的 CLAUDE_AGENT_* 环境变量
   - 传参只对当前 session 生效，可用于多 session 独立通知
+  - 手动/测试用途时加 --no-notify，阻止通知发到主频道
 EOF
 }
 
@@ -45,6 +48,7 @@ if [ -z "$SESSION" ] || [ -z "$WORKDIR" ]; then
 fi
 
 MODE="--auto"
+NOTIFY="true"
 SESSION_CHAT_ID="${CLAUDE_AGENT_CHAT_ID:-${CODEX_AGENT_CHAT_ID:-}}"
 SESSION_CHANNEL="${CLAUDE_AGENT_CHANNEL:-${CODEX_AGENT_CHANNEL:-}}"
 SESSION_ACCOUNT="${CLAUDE_AGENT_ACCOUNT:-${CODEX_AGENT_ACCOUNT:-}}"
@@ -60,6 +64,10 @@ while [ $# -gt 0 ]; do
             ;;
         --auto)
             MODE="--auto"
+            shift
+            ;;
+        --no-notify)
+            NOTIFY="false"
             shift
             ;;
         --chat-id)
@@ -131,12 +139,12 @@ if [ -n "$SESSION_CHAT_ID" ]; then
     fi
 fi
 if [ -n "$SESSION_CHAT_ID" ]; then
-    python3 - "$ROUTE_FILE" "$SESSION" "$WORKDIR" "$SESSION_CHAT_ID" "$SESSION_CHANNEL" "$SESSION_AGENT" "$SESSION_ACCOUNT" <<'PY'
+    python3 - "$ROUTE_FILE" "$SESSION" "$WORKDIR" "$SESSION_CHAT_ID" "$SESSION_CHANNEL" "$SESSION_AGENT" "$SESSION_ACCOUNT" "$NOTIFY" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
 from uuid import uuid4
-route_file, session_name, workdir, chat_id, channel, agent_name, account = sys.argv[1:8]
+route_file, session_name, workdir, chat_id, channel, agent_name, account, notify = sys.argv[1:9]
 trace_id = f"route-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}-{uuid4().hex[:12]}"
 payload = {
     "session_name": session_name,
@@ -146,6 +154,33 @@ payload = {
     "account": account,
     "agent_name": agent_name,
     "trace_id": trace_id,
+    "managed": "true",
+    "notify": notify,
+    "updated_at": datetime.now(timezone.utc).isoformat(),
+}
+with open(route_file, "w") as f:
+    json.dump(payload, f, ensure_ascii=False, indent=2)
+PY
+else
+    # 即使没有传 --chat-id，也写一个最小 route file，标记为 managed
+    # 这样 monitor 可以正确识别这是受管 session，而不是 fallback 到主频道
+    python3 - "$ROUTE_FILE" "$SESSION" "$WORKDIR" "$NOTIFY" <<'PY'
+import json
+import sys
+from datetime import datetime, timezone
+from uuid import uuid4
+route_file, session_name, workdir, notify = sys.argv[1:5]
+trace_id = f"route-{datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')}-{uuid4().hex[:12]}"
+payload = {
+    "session_name": session_name,
+    "workdir": workdir,
+    "chat_id": "",
+    "channel": "",
+    "account": "",
+    "agent_name": "",
+    "trace_id": trace_id,
+    "managed": "true",
+    "notify": notify,
     "updated_at": datetime.now(timezone.utc).isoformat(),
 }
 with open(route_file, "w") as f:
@@ -209,6 +244,7 @@ nohup env \
     CLAUDE_AGENT_ACCOUNT="$SESSION_ACCOUNT" \
     CLAUDE_AGENT_NAME="$SESSION_AGENT" \
     CLAUDE_AGENT_SESSION="$SESSION" \
+    CLAUDE_AGENT_NOTIFY="$NOTIFY" \
     bash "$SKILL_DIR/hooks/pane_monitor.sh" "$SESSION" > /dev/null 2>&1 &
 echo $! > "$MONITOR_PID_FILE"
 
@@ -216,7 +252,7 @@ echo "✅ Claude Code started"
 echo "   session:  $SESSION"
 echo "   workdir:  $WORKDIR"
 echo "   mode:     ${MODE#--}"
-echo "   notify:   ${SESSION_CHANNEL:-unset} ${SESSION_ACCOUNT:+account=$SESSION_ACCOUNT }${SESSION_CHAT_ID:-unset}"
+echo "   notify:   ${SESSION_CHANNEL:-unset}${NOTIFY:+ notify=$NOTIFY} ${SESSION_ACCOUNT:+account=$SESSION_ACCOUNT }"
 echo "   agent:    ${SESSION_AGENT:-unset}"
 echo "   route:    $ROUTE_FILE"
 echo "   monitor:  PID $(cat "$MONITOR_PID_FILE")"

@@ -160,6 +160,10 @@ WORKDIR="$(resolve_route_field workdir)"
 ROUTE_FILE="$(resolve_route_field route_file)"
 TRACE_ID="$(resolve_route_field trace_id)"
 MANAGED="$(resolve_route_field managed)"
+NOTIFY="$(resolve_route_field notify)"
+if [ "${NOTIFY:-true}" = "false" ]; then
+    log "Notifications explicitly disabled for session $SESSION (notify=false)"
+fi
 
 cleanup() {
     local pid_file="/tmp/claude_monitor_${SESSION}.pid"
@@ -214,7 +218,7 @@ while true; do
         CMD="$(extract_approval_command "$OUTPUT")"
         STATE="approval:${TOOL:-unknown}:${CMD:-unknown}"
 
-        if [ "$STATE" != "$NOTIFIED_APPROVAL" ]; then
+        if [ "$STATE" != "$NOTIFIED_APPROVAL" ] && [ "${NOTIFY:-true}" != "false" ]; then
             NOTIFIED_APPROVAL="$STATE"
             MSG="$(build_approval_message "${TOOL:-unknown}" "${CMD:-unknown}")"
             if ! notify_thread "$MSG" "approval"; then
@@ -239,7 +243,7 @@ command: ${CMD:-unknown}
         log "Prompt disappeared, transitioned to working (last working ended ${TIME_SINCE_LAST_WORKING}s ago)"
         
         # 只有静默期超过阈值时才发送通知
-        if [ "$TIME_SINCE_LAST_WORKING" -ge "$QUIET_PERIOD_SECONDS" ]; then
+        if [ "$TIME_SINCE_LAST_WORKING" -ge "$QUIET_PERIOD_SECONDS" ] && [ "${NOTIFY:-true}" != "false" ]; then
             MSG="$(build_work_start_message)"
             if notify_thread "$MSG" "work-start"; then
                 log "Work-start notification sent (quiet period: ${TIME_SINCE_LAST_WORKING}s)"
